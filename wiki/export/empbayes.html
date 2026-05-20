@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Empirical Bayes</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+  </style>
+  <script defer=""
+  src="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+ var mathElements = document.getElementsByClassName("math");
+ var macros = [];
+ for (var i = 0; i < mathElements.length; i++) {
+  var texText = mathElements[i].firstChild;
+  if (mathElements[i].tagName == "SPAN") {
+   katex.render(texText.data, mathElements[i], {
+    displayMode: mathElements[i].classList.contains('display'),
+    throwOnError: false,
+    macros: macros,
+    fleqn: false
+   });
+}}});
+  </script>
+  <link rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css" />
+  <link rel="stylesheet" href="wiki.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Empirical Bayes</h1>
+</header>
+<hr>
+<nav id="TOC" role="doc-toc">
+<ul class="incremental">
+<li><a href="#parallel-statistical-problems"
+id="toc-parallel-statistical-problems">Parallel Statistical
+Problems</a></li>
+</ul>
+</nav>
+<hr>
+<h3 id="parallel-statistical-problems">Parallel Statistical
+Problems</h3>
+<hr />
+<h4 id="a-preliminary-example">A Preliminary Example</h4>
+<p>This is essentially Robbins (1951).</p>
+<p>Consider the decision problem of choosing <span
+class="math inline">\theta \in \{-1, 1\}</span> after observing <span
+class="math inline">X \sim N(\theta, 1)</span>. The clear minimax
+decision rule is given by <span class="math inline">\theta =
+\mathop{\mathrm{sgn}}(X)</span>.</p>
+<p>Under some prior that assigns <span class="math inline">P(\theta = 1)
+= \pi</span>, we have that the Bayes optimal rule is <span
+class="math display">
+  \hat \theta_{\pi} = \mathop{\mathrm{sgn}}\left(X - \frac{1}{2} \log
+\left( \frac{1 - \pi}{\pi} \right)  \right)
+</span> which incurs frequentist risk <span class="math display">
+  R_\pi = P(\hat \theta_\pi \neq \theta) = \pi \Phi \left( \frac{1}{2}
+\log \left( \frac{1 - \pi}{\pi} \right) - 1\right) +
+  (1 - \pi) \Phi \left( -\frac{1}{2} \log \left( \frac{1 - \pi}{\pi}
+\right) - 1\right).
+</span> Note that the minimax rule is equivalent to <span
+class="math inline">\pi = \frac{1}{2}</span> and has risk <span
+class="math inline">R_{1/2} = \Phi(-1)</span>.</p>
+<p>Now consider observations <span class="math inline">X_1, \dots,
+X_n</span> which obey <span class="math inline">X_i \sim N(\theta_i,
+1)</span> under the loss <span class="math inline">L(\hat \theta,
+\theta) = \frac{1}{n}\sum_{i=1}^n 1\{\hat \theta_i \neq
+\theta_i\}</span> (which simply counts the proportion of entries in
+which we make an error). The minimax risk is again achieved by taking
+the sign component-wise, and suppose that we again have the prior which
+assigns <span class="math inline">P(\theta_i = 1) = \pi</span>
+independently. Again the Bayes optimal rule is still simple and is just
+the above applied component-wise.</p>
+<p>Now suppose that we are willing to make the assumption that <span
+class="math inline">P(\theta_i = 1) = \pi</span> for <em>some</em> <span
+class="math inline">\pi</span>, but one which is unknown. Then we set
+<span class="math display">
+  \hat \pi = \left(\frac{\frac{1}{n} \sum_{i=1}^n X_i + 1}{2} \land
+1\right) \lor -1
+</span> as (essentially) the method of moments estimator; we then take
+<span class="math inline">\hat \theta_{EB} = \hat \theta_{\hat
+\pi}</span> which has asymptotic risk equal to <span
+class="math inline">R_{\pi}</span> where here <span
+class="math inline">\pi = \lim_{n \to \infty} \hat \pi</span> is the
+“true” prior parameter.</p>
+<p>Now we treat the parameters <span class="math inline">\theta_i</span>
+as fixed and translate the above estimator into this setting. Set <span
+class="math inline">\pi_n = \frac{1}{n} \sum_{i=1}^n 1\{\theta_i =
+1\}</span>, we have that (without the clipping) <span
+class="math inline">\hat \pi \sim N(\pi_n, \frac{1}{4n})</span>, and so
+<span class="math inline">\hat \theta_{EB}</span> has risk approximately
+equal to <span class="math inline">R_{\pi_n}</span> for large <span
+class="math inline">n</span>. Note that <span
+class="math inline">R_{\pi_n} &lt; R_{1/2}</span>, the minimax risk for
+any <span class="math inline">\pi_n \neq 1/2</span>.</p>
+<h4 id="the-general-setup">The General Setup</h4>
+<p>Now consider the general setup of parameters <span
+class="math inline">\theta_1, \theta_2, \dots, \theta_n, \dots</span>
+and observations <span class="math inline">X_1, X_2, \dots, X_n,
+\dots</span> with each <span class="math inline">X_i \sim
+P_{\theta_i}</span> and either <span class="math inline">\theta_i \sim
+G</span> or <span class="math inline">\theta_i</span> some fixed
+constant. We will use <span class="math inline">\underline \theta</span>
+(and underlines in general) to denote the full vector of <span
+class="math inline">\theta_i</span>. Finally, denote the parameter space
+as <span class="math inline">\Omega</span> and the space observations
+reside within as <span class="math inline">\mathcal X</span>.</p>
+<p>There are a couple of choices for assessing the performance of an
+estimator <span class="math inline">\hat t: \mathcal X \to \Omega</span>
+which we assume to depend only on <span class="math inline">X_1, \dots,
+X_n</span>; we will also write <span class="math inline">\underline t:
+\mathcal X^n \to \Omega^n</span> for an estimator which maps observation
+vectors to parameter vectors.</p>
+<p><em>Def</em>: The <strong>compound loss</strong> is given as <span
+class="math display">
+  R(\underline t, \underline \theta) = \frac{1}{n} \sum_{i=1}^n
+E[L((\underline t(X))_i, \theta_i)]
+</span> whereas the <strong>out-of-sample</strong> loss is simply <span
+class="math display">
+  E[L(\hat t(X_{n+1}, \theta_{n+1})]
+</span> which in the case we take <span class="math inline">\theta_i
+\sim G</span>.</p>
+<p><em>Def</em>: The <strong>regret</strong> of an estimator <span
+class="math inline">\hat t</span> is given by <span
+class="math display">
+  \mathop{\mathrm{regret}}(\hat t) = E_G[L(\hat t(X_{n+1}),
+\theta_{n+1})] - R(G)
+</span> where <span class="math inline">R(G)</span> is the Bayes risk
+under <span class="math inline">G</span>.</p>
+<p><em>Def</em>: We say that an estimator <span
+class="math inline">\underline t: \mathcal X^n \to \Omega^n</span> is
+<strong>equivariant</strong> if <span class="math inline">\underline
+t</span> is invariant under permutation of the <span
+class="math inline">(\theta_i, X_i)</span>; we say that it is
+<strong>separable</strong> if there is a univariate <span
+class="math inline">t: \mathcal X \to \Omega</span> such that <span
+class="math inline">\underline t(\underline X) = (t(X_1), \dots,
+t(X_n))</span>.</p>
+<p>If we consider <span class="math inline">\theta_1, \dots,
+\theta_n</span> to be fixed instead, we are interested in the quantity
+<span class="math display">
+  R(\underline \theta) = \inf_{\underline t} \{ R(\underline t,
+\underline \theta) \}
+</span> where the infimum is taken over all estimators <span
+class="math inline">\underline t</span> which are equivariant and
+separable.</p>
+<p><strong>Theorem (Fundamental Theorem of Compound Decisions)</strong>:
+Consider the empirical distribution <span class="math display">
+  G_n(\underline \theta) = \frac{1}{n} \sum_{i=1}^n \delta_{\theta_i}.
+</span> Then, we have that <span class="math display">
+  R(G_n(\underline \theta)) = R(\underline \theta)
+</span> where the LHS refers to the Bayes risk.</p>
+<p>As a corollary, we have that the best equivariant and separable
+decision rule is the Bayes decision with respect to the prior of the
+empirical distribution.</p>
+<!-- ### $F$-Modeling and $G$-Modeling -->
+<!-- In the above, we used "$F$-modeling," by which we mean we modeled the marginal $F_G(X)$ -->
+</body>
+</html>

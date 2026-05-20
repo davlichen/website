@@ -1,5 +1,5 @@
 ---
-title: 'Welcome!'
+title: 'Trivialities'
 ...
 
 ### Probability 
@@ -53,7 +53,6 @@ title: 'Welcome!'
 
 ---------------
 
-<!-- - [Algebraic Geometry](/notes/old/alggeo.html) -->
 - [Probability](/notes/old/probability.html)
 - [Analytic Number Theory](/notes/old/ant.html)
 - [CMUSRP](/notes/old/paris.html)

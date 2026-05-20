@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Randomness and High Dimensional Optimization</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+  </style>
+  <script defer=""
+  src="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+ var mathElements = document.getElementsByClassName("math");
+ var macros = [];
+ for (var i = 0; i < mathElements.length; i++) {
+  var texText = mathElements[i].firstChild;
+  if (mathElements[i].tagName == "SPAN") {
+   katex.render(texText.data, mathElements[i], {
+    displayMode: mathElements[i].classList.contains('display'),
+    throwOnError: false,
+    macros: macros,
+    fleqn: false
+   });
+}}});
+  </script>
+  <link rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css" />
+  <link rel="stylesheet" href="wiki.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Randomness and High Dimensional Optimization</h1>
+<h2 class="subtitle">UChicago STAT 36612, Autumn 2025</h2>
+</header>
+<hr>
+<nav id="TOC" role="doc-toc">
+<ul class="incremental">
+<li><a href="#gaussian-processes" id="toc-gaussian-processes">Gaussian
+Processes</a></li>
+</ul>
+</nav>
+<hr>
+<p>Broadly speaking, we will consider problems of the form <span
+class="math display">
+    \min_{x \in \mathcal X} f(x)
+</span> for (potentially) randomized <span class="math inline">f</span>
+and <span class="math inline">\mathcal X</span> sufficiently large such
+that brute force is not feasible.</p>
+<h4 id="examples">Examples</h4>
+<ol class="incremental" type="1">
+<li>Consider the problem of finding the top eigenvalue of a random
+matrix <span class="math inline">G</span> in the Gaussian orthogonal
+ensemble: <span class="math display">
+\mathbb E \max_{x \in \mathbb{R}^N, |x|_2 = 1} \left\langle x, Gx
+\right\rangle
+</span> with <span class="math inline">G_{ij} = G_{ji} \sim N(0,
+1/N)</span>, and <span class="math inline">G_{ii} = 0</span>. Wigner’s
+semicircle law shows that this is <span class="math inline">\approx
+2</span> for large <span class="math inline">N</span>. Without the
+maximum, this problem is simple: <span class="math display">
+\mathbb E[\left\langle x, Gx \right\rangle] = \left\langle x, \mathbb
+E[G]x \right\rangle = 0
+</span> and <span class="math display">
+\begin{align*}
+\mathop{\mathrm{Var}}(\left\langle x, Gx \right\rangle) &amp;= \mathbb E
+\left[ \left( 2\sum_{i &lt; j}x_i G_{ij}x_j \right)^2 \right] \\
+&amp;= 4\mathbb E \left[ \sum_{i &lt; j} x_i^2 G_{ij}^2 x_j^2 \right] \\
+&amp;= \frac{4}{N} \sum_{i &lt; j} x_i^2 x_j^2 \\
+&amp;= \frac{2}{N} \left( \left(\sum_{i = 1}^n x_i^2 \right)^2 -
+\sum_{i=1}^n x_i^4 \right) \\
+&amp;= \frac{2}{N} \left( 1 - \|x\|_4^4 \right),
+\end{align*}
+</span> so <span class="math inline">\left\langle x, Gx \right\rangle
+\sim N(0, 2/N)</span>.</li>
+<li>Alternatively, consider <span class="math display">
+\mathbb E \max_{x \in \{\pm 1\}^N} \left\langle x, Gx \right\rangle.
+</span> While harder, we can demonstrate that it is bounded above by
+<span class="math inline">2N</span> by reducing to the previous case:
+<span class="math display">
+\frac{1}{N}\mathbb E \max_{x \in \{\pm 1\}^N} \left\langle x, Gx
+\right\rangle =
+\mathbb E \max_{x \in \{\pm 1\}^N} \left\langle \frac{x}{\sqrt{N}}, G
+\frac{x}{\sqrt{N}} \right\rangle \leq
+\mathbb E \max_{x \in \mathbb{R}^N, |x|_2 = 1} \left\langle x, Gx
+\right\rangle \approx 2.
+</span></li>
+<li>(A Random Convex Program) Take a (non-symmetric) random matrix <span
+class="math inline">X \in \mathbb R^{n \times p}</span> with <span
+class="math inline">X_{ij} \sim N(0, 1)</span> and <span
+class="math display">
+Y = X \beta + \xi
+</span> for <span class="math inline">\xi \sim N(0, 1)</span>. Then we
+might try to ask, e.g., <span class="math display">
+\min_{\hat \beta \in \mathbb{R}^p} \|Y - X\hat \beta\|_2^2 + \lambda
+\|\hat \beta\|_1
+</span> in hopes of recovering a sufficiently sparse <span
+class="math inline">\beta</span> vector. Being able to compute
+properties of the achieved minimum can translate into computing
+properties of <span class="math inline">\hat \beta</span> (relative to
+the “true” underlying <span class="math inline">\beta</span>).</li>
+<li>(A Nonconvex/Combinatorial Problem) Let <span class="math inline">A
+\in \mathbb R^{N \times N}</span> with <span class="math inline">A_{ij}
+\sim \mathrm{Ber}(1/2)</span>, <span class="math inline">A_{ii} =
+1</span>. Then we might ask about <span class="math display">
+\mathbb E \max \{|S| \mid S \subset [N], A_{SS} = \mathbf 1 \}
+</span> which we call the largest clique problem (think of <span
+class="math inline">A</span> as a random adjacency matrix for a graph).
+Further, we might care about limitations on “compute”: what can we do in
+polynomial time?</li>
+<li>(An Application) One sends radio signals as waves; but there is
+usually some corruption between the sent and received messages. So how
+does one send messages over a noisy channel? The core math problem is as
+follows: given a message <span class="math inline">M \in \{\pm
+1\}^{n}</span>, is there a way to encode it into <span
+class="math inline">\{\pm 1\}^{N}</span> such that decoding is robust to
+corruption? For modern solutions, look for low density parity checks:
+write <span class="math display">
+Y = (M, Z) + \mathrm{ noise}
+</span> where <span class="math inline">Z</span> is some additional
+information, and take <span class="math inline">Z_{i}</span> to be the
+parity of the sum of a bunch of (well chosen) entries of <span
+class="math inline">M</span>. Then decoding is a problem that looks like
+<span class="math display">
+\hat M = \argmin_{M \in \{\pm 1\}^n} \|Y - \mathrm{enc}(M)\|_0.
+</span></li>
+</ol>
+<hr />
+<h3 id="gaussian-processes">Gaussian Processes</h3>
+<p><em>Def</em>: Take some indexing set <span
+class="math inline">T</span>; we say that a collection of random
+variables<span class="math inline">\{g_t\}_{t \in T}</span> is a
+<strong>Gaussian process (GP)</strong> if all the finite-dimensional
+distributions are jointly Gaussian: that is, for all <span
+class="math inline">|S| &lt; \infty</span>, <span
+class="math inline">g_s = \{g_s\}_{s \in T}</span> satisfies <span
+class="math display">
+g_s \sim N(\mu_S, \Sigma_s).
+</span></p>
+<p><em>Def</em>: A <strong>mean-zero GP</strong> satisfies that <span
+class="math inline">\mathbb E[g_t] = 0</span> for all <span
+class="math inline">t \in T</span>.</p>
+<p>As an example, the canonical GP <span class="math inline">X_t</span>
+over <span class="math inline">T \subset \mathbb{R}^n</span> is <span
+class="math inline">X_t = \left\langle g, t \right\rangle</span> where
+<span class="math inline">g \sim N(0, I)</span>. Moreover, we call <span
+class="math display">
+w(T) = \mathbb E \sup_{t \in T}X_t
+</span> the Gaussian width.</p>
+</body>
+</html>
